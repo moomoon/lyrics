@@ -23,6 +23,7 @@ abstract public class LyricItem {
         String t_time = "t_time";
         String length = "length";
     }
+
     private LyricItem() {
     }
 
@@ -233,7 +234,7 @@ abstract public class LyricItem {
         }
     }
 
-    public static final class Line extends LyricItem {
+    public static final class Line extends LyricItem implements Comparable<Line> {
         private final long timeMS;
         private final String text;
 
@@ -256,6 +257,13 @@ abstract public class LyricItem {
 
         @Override public String toString() {
             return "" + timeMS + " : " + text;
+        }
+
+        @Override public int compareTo(Line o) {
+            long timeDiff = timeMS - o.timeMS;
+            if (timeDiff > 0) return 1;
+            if (timeDiff == 0) return 0;
+            return -1;
         }
     }
 

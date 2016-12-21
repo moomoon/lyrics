@@ -150,6 +150,7 @@ public class LyricGroup {
         }
 
         public LyricGroup build() {
+            Collections.sort(lines);
             return new LyricGroup(this);
         }
 
