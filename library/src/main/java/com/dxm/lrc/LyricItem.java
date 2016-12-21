@@ -26,7 +26,7 @@ abstract public class LyricItem {
     private LyricItem() {
     }
 
-    interface Visitor1<P, R> {
+    public interface Visitor1<P, R> {
         R visitTitle(Title title, P p);
 
         R visitArtist(Artist artist, P p);
@@ -42,7 +42,7 @@ abstract public class LyricItem {
         R visitOffset(Offset offset, P p);
     }
 
-    abstract <P, R> R accept(P p, Visitor1<P, R> visitor);
+    public abstract <P, R> R accept(P p, Visitor1<P, R> visitor);
 
     public static LyricItem parse(String input) {
         Pattern mainPattern = Pattern.compile(".*\\[((.*?):\\(?(.*?)\\)?)?\\](.*)");
@@ -123,7 +123,7 @@ abstract public class LyricItem {
             return title;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitTitle(this, p);
         }
 
@@ -143,7 +143,7 @@ abstract public class LyricItem {
             return artist;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitArtist(this, p);
         }
 
@@ -163,7 +163,7 @@ abstract public class LyricItem {
             return author;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitAuthor(this, p);
         }
 
@@ -184,7 +184,7 @@ abstract public class LyricItem {
             return album;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitAlbum(this, p);
         }
 
@@ -204,7 +204,7 @@ abstract public class LyricItem {
             return duration;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitDuration(this, p);
         }
 
@@ -224,7 +224,7 @@ abstract public class LyricItem {
             return offsetMS;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitOffset(this, p);
         }
 
@@ -250,7 +250,7 @@ abstract public class LyricItem {
             return text;
         }
 
-        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+        @Override public <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitLine(this, p);
         }
 
