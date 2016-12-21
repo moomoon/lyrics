@@ -2,7 +2,6 @@ package com.dxm.lrc;
 
 import android.text.TextUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +14,15 @@ import java.util.regex.Pattern;
  */
 
 abstract public class LyricItem {
+    interface Tag {
+        String title = "ti";
+        String artist = "ar";
+        String author = "au";
+        String album = "al";
+        String offset = "offset";
+        String t_time = "t_time";
+        String length = "length";
+    }
     private LyricItem() {
     }
 
@@ -45,19 +53,19 @@ abstract public class LyricItem {
         String bracket = matcher.group(1);
         long time = parseTime(bracket);
         if (groupCount > 3 && time > 0L) return new Line(time, matcher.group(4));
-        switch (matcher.group(2)) {
-            case "ti":
+        switch (matcher.group(2).toLowerCase()) {
+            case Tag.title:
                 return new Title(matcher.group(3));
-            case "ar":
+            case Tag.artist:
                 return new Artist(matcher.group(3));
-            case "au":
+            case Tag.author:
                 return new Author(matcher.group(3));
-            case "al":
+            case Tag.album:
                 return new Album(matcher.group(3));
-            case "offset":
+            case Tag.offset:
                 return new Offset(Long.parseLong(matcher.group(3).replaceAll("\\s", "")));
-            case "t_time":
-            case "length":
+            case Tag.t_time:
+            case Tag.length:
                 return new Duration(parseTime(matcher.group(3).trim()));
         }
         return null;
@@ -225,7 +233,6 @@ abstract public class LyricItem {
         }
     }
 
-
     public static final class Line extends LyricItem {
         private final long timeMS;
         private final String text;
@@ -242,19 +249,6 @@ abstract public class LyricItem {
         public String getText() {
             return text;
         }
-
-        private static Line parse(List<Integer> intPart, int floatPart, String stringPart) {
-            List<Integer> ints = new ArrayList<>(intPart);
-            Collections.reverse(ints);
-            long time = 0;
-            TimeUnit[] availableUnits = {TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS};
-            for (int i = 0; i < Math.min(availableUnits.length, ints.size()); i++) {
-                time += TimeUnit.MILLISECONDS.convert(ints.get(i), availableUnits[i]);
-            }
-            time += (long) (floatPart * 10);
-            return new Line(time, stringPart);
-        }
-
 
         @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
             return visitor.visitLine(this, p);
