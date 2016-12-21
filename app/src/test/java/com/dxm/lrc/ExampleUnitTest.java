@@ -1,4 +1,4 @@
-package com.yi.lrc;
+package com.dxm.sample;
 
 import org.junit.Test;
 

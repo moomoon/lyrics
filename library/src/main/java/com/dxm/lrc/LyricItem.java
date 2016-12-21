@@ -1,9 +1,6 @@
-package com.yi.lrc;
+package com.dxm.lrc;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,20 +19,24 @@ abstract public class LyricItem {
     }
 
     interface Visitor1<P, R> {
-        R visitTitle(@NonNull Title title, P p);
+        R visitTitle(Title title, P p);
 
-        R visitAuthor(@NonNull Author author, P p);
+        R visitArtist(Artist artist, P p);
 
-        R visitAlbum(@NonNull Album album, P p);
+        R visitAlbum(Album album, P p);
 
-        R visitDuration(@NonNull Duration duration, P p);
+        R visitDuration(Duration duration, P p);
 
-        R visitLine(@NonNull Line line, P p);
+        R visitAuthor(Author author, P p);
+
+        R visitLine(Line line, P p);
+
+        R visitOffset(Offset offset, P p);
     }
 
     abstract <P, R> R accept(P p, Visitor1<P, R> visitor);
 
-    @Nullable public static LyricItem parse(@NonNull String input) {
+    public static LyricItem parse(String input) {
         Pattern mainPattern = Pattern.compile(".*\\[((.*?):\\(?(.*?)\\)?)?\\](.*)");
         Matcher matcher = mainPattern.matcher(input);
         if (!matcher.find()) return null;
@@ -48,28 +49,33 @@ abstract public class LyricItem {
             case "ti":
                 return new Title(matcher.group(3));
             case "ar":
+                return new Artist(matcher.group(3));
+            case "au":
                 return new Author(matcher.group(3));
             case "al":
                 return new Album(matcher.group(3));
+            case "offset":
+                return new Offset(Long.parseLong(matcher.group(3).replaceAll("\\s", "")));
             case "t_time":
-                return new Duration(parseTime(matcher.group(3)));
+            case "length":
+                return new Duration(parseTime(matcher.group(3).trim()));
         }
         return null;
     }
 
-    private static long parseTime(@NonNull String input) {
-        Pattern timePattern = Pattern.compile("(\\d+:)*(\\d+(\\.(\\d+))?)");
+    private static long parseTime(String input) {
+        Pattern timePattern = Pattern.compile("((\\d+:)*\\d+)(\\.(\\d+))?");
         Matcher time = timePattern.matcher(input);
         if (!time.matches()) return -1;
         String floatPartStr = time.group(4);
         final float floatPart = TextUtils.isEmpty(floatPartStr) ? 0F : Float.parseFloat("0." + time.group(4));
-        long intPart = parseTimeIntParts(input);
+        long intPart = parseTimeIntParts(time.group(1));
         return intPart + (long) (floatPart * 1000);
     }
 
-    private static long parseTimeIntParts(@NonNull String input) {
+    private static long parseTimeIntParts(String input) {
         long timeMS = 0;
-        Pattern intPattern = Pattern.compile("(\\d{2})[:.]");
+        Pattern intPattern = Pattern.compile("(\\d+):?");
         Matcher ints = intPattern.matcher(input);
         List<Integer> intParts = new LinkedList<>();
         while (ints.find()) intParts.add(Integer.parseInt(ints.group(1)));
@@ -80,11 +86,10 @@ abstract public class LyricItem {
         return timeMS;
     }
 
-    enum LineParser implements FileLineReader.Output<LyricItem> {
+    public enum LineParser implements FileLineReader.Parser<LyricItem> {
         Instance;
 
-
-        @Nullable @Override public LyricItem parse(@NonNull String input) {
+        @Override public LyricItem parse(String input) {
             try {
                 return LyricItem.parse(input);
             } catch (Exception e) {
@@ -100,13 +105,13 @@ abstract public class LyricItem {
 
 
     public static final class Title extends LyricItem {
-        @NonNull private final String title;
+        private final String title;
 
-        public Title(@NonNull String title) {
+        public Title(String title) {
             this.title = title;
         }
 
-        @NonNull public String getTitle() {
+        public String getTitle() {
             return title;
         }
 
@@ -119,14 +124,34 @@ abstract public class LyricItem {
         }
     }
 
-    public static final class Author extends LyricItem {
-        @NonNull private final String author;
+    public static final class Artist extends LyricItem {
+        private final String artist;
 
-        public Author(@NonNull String author) {
+        public Artist(String artist) {
+            this.artist = artist;
+        }
+
+        public String getArtist() {
+            return artist;
+        }
+
+        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+            return visitor.visitArtist(this, p);
+        }
+
+        @Override public String toString() {
+            return "artist = " + artist;
+        }
+    }
+
+    public static final class Author extends LyricItem {
+        private final String author;
+
+        public Author(String author) {
             this.author = author;
         }
 
-        @NonNull public String getAuthor() {
+        public String getAuthor() {
             return author;
         }
 
@@ -139,14 +164,15 @@ abstract public class LyricItem {
         }
     }
 
-    public static final class Album extends LyricItem {
-        @NonNull final String album;
 
-        public Album(@NonNull String album) {
+    public static final class Album extends LyricItem {
+        private final String album;
+
+        public Album(String album) {
             this.album = album;
         }
 
-        @NonNull public String getAlbum() {
+        public String getAlbum() {
             return album;
         }
 
@@ -179,11 +205,32 @@ abstract public class LyricItem {
         }
     }
 
+    public static final class Offset extends LyricItem {
+        private final long offsetMS;
+
+        public Offset(long offsetMS) {
+            this.offsetMS = offsetMS;
+        }
+
+        public long getOffsetMS() {
+            return offsetMS;
+        }
+
+        @Override <P, R> R accept(P p, Visitor1<P, R> visitor) {
+            return visitor.visitOffset(this, p);
+        }
+
+        @Override public String toString() {
+            return "offset = " + offsetMS;
+        }
+    }
+
+
     public static final class Line extends LyricItem {
         private final long timeMS;
-        @NonNull private final String text;
+        private final String text;
 
-        public Line(long timeMS, @NonNull String text) {
+        public Line(long timeMS, String text) {
             this.timeMS = timeMS;
             this.text = text;
         }
@@ -192,11 +239,11 @@ abstract public class LyricItem {
             return timeMS;
         }
 
-        @NonNull public String getText() {
+        public String getText() {
             return text;
         }
 
-        @NonNull private static Line parse(@NonNull List<Integer> intPart, int floatPart, @NonNull String stringPart) {
+        private static Line parse(List<Integer> intPart, int floatPart, String stringPart) {
             List<Integer> ints = new ArrayList<>(intPart);
             Collections.reverse(ints);
             long time = 0;

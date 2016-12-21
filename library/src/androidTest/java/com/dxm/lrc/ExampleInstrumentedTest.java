@@ -1,4 +1,4 @@
-package com.yi.lrc;
+package com.dxm.lrc;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.yi.lrc", appContext.getPackageName());
+        assertEquals("com.dxm.lrc.test", appContext.getPackageName());
     }
 }
