@@ -1,4 +1,4 @@
-# Lyrics
+# Lyrics  [![](https://jitpack.io/v/moomoon/lyrics.svg)](https://jitpack.io/#moomoon/lyrics)
 .LRC file parser
 
 ## Usage
@@ -24,7 +24,7 @@ Add it in your root build.gradle at the end of repositories:
 Add the dependency
 ```groovy
 	dependencies {
-	        compile 'com.github.moomoon:lyrics:1.0.1'
+	        compile 'com.github.moomoon:lyrics:1.0.2'
 	}
 ```
 
